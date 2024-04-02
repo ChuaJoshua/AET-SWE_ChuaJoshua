@@ -1,9 +1,13 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import MySquare from './components/square';
 import socketIOClient from 'socket.io-client';
+import { io } from 'socket.io-client';
+import axios from 'axios';
 
+export const socket = io();
+  
 // Reference some functions from: https://react.dev/learn/tutorial-tic-tac-toe
 
 export default function Game({ params }: { params: { id: string } }) {
@@ -13,18 +17,52 @@ export default function Game({ params }: { params: { id: string } }) {
     const [currentMove, setCurrentMove] = useState(0);
     const [gameEnded, setGameEnded] = useState(false);
     const xIsNext = currentMove % 2 === 0;
+    const [isConnected, setIsConnected] = useState(false);
+    const [transport, setTransport] = useState("N/A");
 
     useEffect(() => {
         document.title = "Game "+ id + " - Tic Tac Toe";
         console.log('Game page loaded');
         console.log(params);
+        getBoard();
+
+        if (socket.connected) {
+            onConnect();
+        }
+        function onConnect() {
+            setIsConnected(true);
+            setTransport(socket.io.engine.transport.name);
+            socket.io.engine.on("upgrade", (transport) => {
+                setTransport(transport.name);
+            });
+        }
+        socket.on("connect", onConnect);
+
+        socket.on('update', (data) => {
+            console.log('Received Update');
+            if (data.sessionId === id){
+                setSquares(data.board);
+                setCurrentMove(currentMove + 1);
+                console.log('Updating Board');
+            };
+        });
+        
+        socket.on("disconnect", () => {
+            setIsConnected(false);
+            setTransport("N/A");
+        });
+      
+        return () => {
+            socket.disconnect();
+        };
+
     }, []);
 
     useEffect(() => {
         if (calculateWinner(squares)) {
             setGameEnded(true);
         }
-        else if (currentMove == 9) {
+        else if (currentMove === 9) {
             setGameEnded(true);
         }
     }, [currentMove, squares]);
@@ -39,10 +77,18 @@ export default function Game({ params }: { params: { id: string } }) {
             }
             setSquares(nextSquares);
             setCurrentMove(currentMove + 1);
+            if (socket)
+            {
+                //socket.emit('update', { board: nextSquares, sessionId: id });
+                socket.emit('update');
+                console.log('Sending Update');
+            }
+            
         }
         else
         {
             alert('Invalid Move');
+            console.log(squares[1], calculateWinner(squares));
         }
     }
 
@@ -51,6 +97,18 @@ export default function Game({ params }: { params: { id: string } }) {
         setCurrentMove(0);
         setSquares(Array(9).fill(''));
         setGameEnded(false);
+    }
+
+    function getBoard()
+    { 
+        axios.get(`http://localhost:5000/game/${id}`)
+        .then(response => {
+            console.log("Initialise Board" ,response.data.board);
+            setSquares(response.data.board);
+        })
+        .catch(error => {
+            console.error('Error fetching game state:', error);
+    });
     }
 
     //Calculate winner 

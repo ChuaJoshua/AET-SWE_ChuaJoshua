@@ -17,20 +17,18 @@ const gameSessions = new Map();
 
 io.on('connection', (socket) => {
     console.log('A user connected');
-  
-    const sessionId = socket.handshake.query.sessionId;
 
-    // Join the specified room or channel
-    socket.join(sessionId);
+    // // Join the specified room or channel
+    // socket.join(sessionId);
 
-    if (!gameSessions.has(sessionId)) {
-        //Initailize a new game session
-        gameSessions.set(sessionId,  {board:[]});
+    // if (!gameSessions.has(sessionId)) {
+    //     //Initailize a new game session
+    //     gameSessions.set(sessionId,  {board:[]});
 
-        //Add Text file for persistent storage
-        const filePath = path.join(recordsDirectory, `${sessionId}.txt`);
-        fs.writeFileSync(filePath, `Game session ID: ${sessionId}\n\n`);
-    }
+    //     //Add Text file for persistent storage
+    //     const filePath = path.join(recordsDirectory, `${sessionId}.txt`);
+    //     fs.writeFileSync(filePath, `Game session ID: ${sessionId}\n\n`);
+    // }
 
     // Handle disconnections
     socket.on('disconnect', () => {
@@ -38,12 +36,12 @@ io.on('connection', (socket) => {
     });
 
     // Handle updates
-    socket.on('update', (updatedBoard, player) => {
+    socket.on('update', () => {
         // Update the board in the gameSessions map
-        gameSessions.set(sessionId, { board: updatedBoard });
-
+        //gameSessions.set(sessionId, { board: updatedBoard });
+        console.log('Update received');
         // Broadcast the updated board to all clients in the session
-        io.to(sessionId).emit('update', updatedBoard);
+        //io.to(sessionId).emit('update', updatedBoard);
     });
     
 });
