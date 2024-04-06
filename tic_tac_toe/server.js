@@ -3,53 +3,20 @@ import next from "next";
 import { Server } from "socket.io";
 import express from "express";
 import cors from "cors";
+import { callbackify } from "node:util";
 
 const path = await import('path');
 const fs = await import('fs');
 
-const recordsDirectory = 'records';
 const dev = process.env.NODE_ENV !== "production";
+const recordsDirectory = 'records';
 const hostname = "localhost";
 const port = 3000;
 const app = next({ dev, hostname, port });
 const handler = app.getRequestHandler();
 
-const server = express();
-const serverPort = 5000;
-
+// Storing Data of Game Sessions in the server
 const gameSessions = new Map();
-
-server.use(cors());
-
-server.get('/game/:sessionId', (req, res) => {
-    const sessionId = req.params.sessionId;
-    console.log('Game data:', gameSessions);
-    // Check if game session exists
-    if (gameSessions.has(sessionId)) {
-        // Get the current game state for the session
-        const gameState = gameSessions.get(sessionId);
-        console.log('Game id:', sessionId);
-        console.log('Game state:', gameState);
-        // Send the game state as JSON
-        res.json(gameState);
-    }
-    else if (!gameSessions.has(sessionId)) {
-        // Get the current game state for the session
-        gameSessions.set(sessionId,  { board:['','','','','','','','',''] });
-        const filePath = path.join(recordsDirectory, `${sessionId}.txt`);
-        fs.writeFileSync(filePath, `Game session ID: ${sessionId}\n\n`);
-        console.log('New Game state:', gameSessions.get(sessionId));
-        // Send the game state as JSON
-        res.json(gameSessions.get(sessionId));
-    } else {
-        // Game session not found, return an error
-        res.status(404).json({ error: 'Game session not found' });
-    }
-});
-
-server.listen(serverPort, () => {
-  console.log(`Server running at http://localhost:${port}/`);
-});
 
 app.prepare().then(() => {
   const httpServer = createServer(handler);
@@ -60,18 +27,42 @@ app.prepare().then(() => {
   io.on("connection", (socket) => {
     console.log("A user connected to websockets");
 
+    //Join the Game Session
+    socket.on("join", (data, callback) => {
+      const sessionId = data.id;
+      console.log(`User joined session: ${sessionId}`);
+      socket.join(sessionId);
+      const sessionData = gameSessions.get(sessionId);
+
+      if (sessionData === undefined) {
+        //Create a new board
+        const board = Array(9).fill('');
+        gameSessions.set(sessionId, { board: board, currentMove: 'X'});
+        console.log('SERVER: New Game data:', gameSessions.get(sessionId));
+        socket.emit('update', { sessionId, board });
+        callback({ board: board })
+      }
+      else
+      {
+        const gameBoard = gameSessions.get(sessionId).board;
+        const currentMove = gameSessions.get(sessionId).currentMove;
+        console.log('SERVER: New Game data:', gameSessions.get(sessionId));
+        socket.emit('update', { sessionId, board: gameBoard, currentMove: currentMove});
+        callback({ board: gameBoard })
+      }
+    });
+      
 
     // Forward Data on update event
     socket.on('update', (data) => {
       // Update the board in the gameSessions map
-      gameSessions.set(data.sessionId, { board: data.board });
+      gameSessions.set(data.sessionId, { board: data.board, currentMove: data.currentMove});
       console.log('Update received:', data);
-      console.log('Game data:', gameSessions);
-      
+      console.log('Updated Game data:', gameSessions);
       
       // Broadcast the updated board to all clients in the session
-      io.emit('update', data);
-  });
+      io.to(data.sessionId).emit('update', data);
+    });
 
   });
 

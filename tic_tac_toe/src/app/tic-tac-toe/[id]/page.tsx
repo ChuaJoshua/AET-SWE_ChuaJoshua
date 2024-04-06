@@ -4,7 +4,6 @@ import { useRef, useEffect, useState } from 'react';
 import MySquare from './components/square';
 import socketIOClient from 'socket.io-client';
 import { io } from 'socket.io-client';
-import axios from 'axios';
 
 export const socket = io();
   
@@ -14,9 +13,8 @@ export default function Game({ params }: { params: { id: string } }) {
 
     const { id } = params; // Destructure id from params object
     const [squares, setSquares] = useState<string[]>(Array(9).fill(''));
-    const [currentMove, setCurrentMove] = useState(0);
+    const [currentMove, setCurrentMove] = useState('X');
     const [gameEnded, setGameEnded] = useState(false);
-    const xIsNext = currentMove % 2 === 0;
     const [isConnected, setIsConnected] = useState(false);
     const [transport, setTransport] = useState("N/A");
 
@@ -24,7 +22,6 @@ export default function Game({ params }: { params: { id: string } }) {
         document.title = "Game "+ id + " - Tic Tac Toe";
         console.log('Game page loaded');
         console.log(params);
-        getBoard();
 
         if (socket.connected) {
             onConnect();
@@ -33,22 +30,27 @@ export default function Game({ params }: { params: { id: string } }) {
           function onConnect() {
             setIsConnected(true);
             setTransport(socket.io.engine.transport.name);
+
+            socket.on('update', (data): void => {
+                setSquares(data.board);
+                setCurrentMove(data.currentMove);
+                console.log('Received Update: ', data.currentMove);
+            });
+
+            socket.emit('join', { id: id }, (response: { board: string[], currentMove: string }) => {
+                // Server has acknowledged 'join' event
+                // 'response' should include the game data
+                if (response.board && response.currentMove) {
+                    setSquares(response.board);
+                    setCurrentMove(response.currentMove);
+                }
+            });
       
             socket.io.engine.on("upgrade", (transport) => {
               setTransport(transport.name);
             });
-
-            socket.on('update', (data) => {
-                console.log('Received Update');
-                if (data.sessionId === id){
-                    setSquares(data.board);
-                    setCurrentMove(currentMove + 1);
-                    console.log('Updating Board');
-                };
-            });
-          
           }
-
+      
           function onDisconnect() {
             setIsConnected(false);
             setTransport("N/A");
@@ -59,16 +61,15 @@ export default function Game({ params }: { params: { id: string } }) {
       
           return () => {
             socket.off("connect", onConnect);
-            socket.off("disconnect", onDisconnect);
+            socket.off("disconnect", onDisconnect)
+            socket.off('update');
           };
 
     }, []);
 
     useEffect(() => {
-        if (calculateWinner(squares)) {
-            setGameEnded(true);
-        }
-        else if (currentMove === 9) {
+        console.log('Current Squares: ', squares);
+        if (calculateWinner(squares) || calculateDraw(squares) ) {
             setGameEnded(true);
         }
     }, [currentMove, squares]);
@@ -76,17 +77,16 @@ export default function Game({ params }: { params: { id: string } }) {
     function handleClick(index: number) {
         if(squares[index] === '' && !calculateWinner(squares)) {
             const nextSquares = squares.slice();
-            if (xIsNext) {
-                nextSquares[index] = 'X';
-            } else {
-                nextSquares[index] = 'O';
-            }
+            nextSquares[index] = currentMove;
+            const nextMove = currentMove === 'X' ? 'O' : 'X';
+
+            setCurrentMove(nextMove);
             setSquares(nextSquares);
+
             if (socket)
             {
-                socket.emit('update', { board: nextSquares, sessionId: id });
-                //socket.emit('update');
-                console.log('Sending Update');
+                console.log('Sending Update WHERE', { board: nextSquares, sessionId: id, currentMove: nextMove });
+                socket.emit('update', { board: nextSquares, sessionId: id, currentMove: nextMove });
             }
             
         }
@@ -95,25 +95,6 @@ export default function Game({ params }: { params: { id: string } }) {
             alert('Invalid Move');
             console.log(squares[1], calculateWinner(squares));
         }
-    }
-
-    function restartGame()
-    {
-        setCurrentMove(0);
-        setSquares(Array(9).fill(''));
-        setGameEnded(false);
-    }
-
-    function getBoard()
-    { 
-        axios.get(`http://localhost:5000/game/${id}`)
-        .then(response => {
-            console.log("Initialise Board" ,response.data.board);
-            setSquares(response.data.board);
-        })
-        .catch(error => {
-            console.error('Error fetching game state:', error);
-    });
     }
 
     //Calculate winner 
@@ -139,8 +120,14 @@ export default function Game({ params }: { params: { id: string } }) {
         }
         return null;
     }
-      
 
+    function calculateDraw(squares : string[]) {
+        return (squares.every(square => square !== '') ? true : false);
+    }
+
+    if (squares == null) {
+        return <div>Loading...</div>; 
+    }
 
    return  (
     <div className="bg-white lg:flex lg:justify-center lg:pt-5 w-full min-h-screen items-center">
@@ -149,10 +136,10 @@ export default function Game({ params }: { params: { id: string } }) {
             <div className="mb-4 text-xl font-bold">
                 {calculateWinner(squares) ? (
                     `Winner: ${calculateWinner(squares)}`
-                ) : currentMove === 9 ? (
+                ) : calculateDraw(squares) ? (
                     'Match Draw'
                 ) : (
-                    `Player ${xIsNext ? 'X' : 'O'}'s Move`
+                    `Player ${currentMove}'s Move`
                 )}
             </div> 
             <div className="flex flex-col">
@@ -174,10 +161,10 @@ export default function Game({ params }: { params: { id: string } }) {
             </div>
             <div>
             {gameEnded ? (
-                <div className="bg-slate-950 text-white p-2 m-2 rounded-lg" onClick={() => restartGame()}>Restart Game</div>
+                <div className="bg-slate-950 text-white p-2 m-2 rounded-lg" >Game Ended</div>
             ) : null}
             </div>    
         </div>
     </div>
-    );
+);
 }
