@@ -43,15 +43,20 @@ app.prepare().then(() => {
         // Create a new file to store the game data
         const filePath = path.join(recordsDirectory, `${sessionId}.txt`);
         fs.writeFileSync(filePath, `Game session ID: ${sessionId}\n\n`);
-
-        callback({ board: board, currentMove: 'X'})
+        const fileData = fs.readFileSync(filePath, 'utf8');
+        
+        callback({ board: board, currentMove: 'X', fileData: fileData});
       }
       else
       {
         const gameBoard = gameSessions.get(sessionId).board;
         const currentMove = gameSessions.get(sessionId).currentMove;
         console.log('SERVER: old Game data:', gameSessions.get(sessionId));
-        callback({ board: gameBoard, currentMove: currentMove})
+
+        const filePath = path.join(recordsDirectory, `${data.id}.txt`);
+        const fileData = fs.readFileSync(filePath, 'utf8');
+
+        callback({ board: gameBoard, currentMove: currentMove, fileData: fileData});
       }
 
     });
@@ -67,7 +72,9 @@ app.prepare().then(() => {
       // Append the move to the file
       const filePath = path.join(recordsDirectory, `${data.sessionId}.txt`);
       const prevMove = data.currentMove === 'X' ? 'O' : 'X';
-      fs.appendFileSync(filePath, `Move: ${prevMove} at index: ${data.index}\n`);
+      fs.appendFileSync(filePath, `${prevMove} moves at index: ${data.index}.\n`);
+      const fileData = fs.readFileSync(filePath, 'utf8');
+      data.fileData = fileData;
 
       // Broadcast the updated board to all clients in the session
       io.to(data.sessionId).emit('update', data);
@@ -75,10 +82,6 @@ app.prepare().then(() => {
 
     socket.on("file", (data, callback) => { 
       console.log('File Requested for Session:', data.id);
-      const filePath = path.join(recordsDirectory, `${data.id}.txt`);
-      const fileData = fs.readFileSync(filePath, 'utf8');
-      console.log('File Data:', fileData);
-      callback({ fileData: fileData });
     });
 
   });

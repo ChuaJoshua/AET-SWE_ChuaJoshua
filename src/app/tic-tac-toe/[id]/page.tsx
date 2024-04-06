@@ -34,15 +34,17 @@ export default function Game({ params }: { params: { id: string } }) {
             socket.on('update', (data): void => {
                 setSquares(data.board);
                 setCurrentMove(data.currentMove);
+                setRecords(data.fileData);
                 console.log('Received Update: ', data.currentMove);
             });
 
-            socket.emit('join', { id: id }, (response: { board: string[], currentMove: string }) => {
+            socket.emit('join', { id: id }, (response: { board: string[], currentMove: string , fileData: string}) => {
                 // Server has acknowledged 'join' event
                 // 'response' should include the game data
                 if (response.board && response.currentMove) {
                     setSquares(response.board);
                     setCurrentMove(response.currentMove);
+                    setRecords(response.fileData);
                 }
             });
       
@@ -66,20 +68,6 @@ export default function Game({ params }: { params: { id: string } }) {
           };
 
     }, []);
-
-    useEffect(() => {
-        console.log('Current Squares: ', squares);
-        if (calculateWinner(squares) || calculateDraw(squares) ) {
-            socket.emit('file', { id: id }, (response: { fileData: string }) => { // Explicitly define the type of 'file'
-                // Server has acknowledged 'join' event
-                // 'response' should include the game data
-                console.log('Received File: ', response.fileData);
-                if (response.fileData) {
-                    setRecords(response.fileData);
-                }
-            });
-        }
-    }, [currentMove, squares]);
 
     function handleClick(index: number) {
         if(squares[index] === '' && !calculateWinner(squares)) {
@@ -143,7 +131,7 @@ export default function Game({ params }: { params: { id: string } }) {
         )
     }
 
-   return  (
+return (
     <div className="bg-white lg:flex lg:justify-center lg:pt-5 w-full min-h-screen items-center">
         <div className="flex flex-col px-6 py-12 bg-white items-center">
             <h1 className="text-3xl font-bold pb-10">Tic Tac Toe</h1>
@@ -153,34 +141,32 @@ export default function Game({ params }: { params: { id: string } }) {
                 ) : calculateDraw(squares) ? (
                     'Match Draw'
                 ) : (
-                    `Player ${currentMove}'s Move`
+                    `Currently, Player ${currentMove}'s Move`
                 )}
-            </div> 
-            <div className="flex flex-col">
-                <div className="flex flex-row">
-                    <MySquare value={squares[0]} onClick={() => handleClick(0)}/>
-                    <MySquare value={squares[1]} onClick={() => handleClick(1)}/> 
-                    <MySquare value={squares[2]} onClick={() => handleClick(2)}/> 
-                </div>
-                <div className="flex flex-row">
-                    <MySquare value={squares[3]} onClick={() => handleClick(3)}/>
-                    <MySquare value={squares[4]} onClick={() => handleClick(4)}/> 
-                    <MySquare value={squares[5]} onClick={() => handleClick(5)}/> 
-                </div>
-                <div className="flex flex-row">
-                    <MySquare value={squares[6]} onClick={() => handleClick(6)}/>
-                    <MySquare value={squares[7]} onClick={() => handleClick(7)}/> 
-                    <MySquare value={squares[8]} onClick={() => handleClick(8)}/> 
-                </div>
             </div>
-            <div>
-            {records !== "" ? (
-                <div className="bg-slate-950 text-white p-2 m-2 rounded-lg" >
-                    <h3 className="text-lg font-bold">Game Records</h3>
+            <div className="flex flex-row">
+                <div className="bg-slate-950 text-white p-5 mr-10 rounded-lg">
+                    <h3 className="text-lg font-bold">{records !== "" ? 'No Game records' : 'Game records'}</h3>
                     <pre className="text-sm">{records}</pre>
                 </div>
-            ) : null}
-            </div>    
+                <div className="flex flex-col">
+                    <div className="flex flex-row">
+                        <MySquare value={squares[0]} onClick={() => handleClick(0)} />
+                        <MySquare value={squares[1]} onClick={() => handleClick(1)} />
+                        <MySquare value={squares[2]} onClick={() => handleClick(2)} />
+                    </div>
+                    <div className="flex flex-row">
+                        <MySquare value={squares[3]} onClick={() => handleClick(3)} />
+                        <MySquare value={squares[4]} onClick={() => handleClick(4)} />
+                        <MySquare value={squares[5]} onClick={() => handleClick(5)} />
+                    </div>
+                    <div className="flex flex-row">
+                        <MySquare value={squares[6]} onClick={() => handleClick(6)} />
+                        <MySquare value={squares[7]} onClick={() => handleClick(7)} />
+                        <MySquare value={squares[8]} onClick={() => handleClick(8)} />
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 );
