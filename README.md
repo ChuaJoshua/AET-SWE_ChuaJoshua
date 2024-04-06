@@ -32,7 +32,7 @@ Source: [https://www.datylon.com/blog/data-visualization-for-colorblind-readers]
 3. **Compactness** - I do have a classmate that has too navigate the webpage using 180% zoom due to his visual disability. He has a difficult time navigating my institute's portal as which has content all around the webpage. Hence, I kept my UI compact to prevent navigation around the webpage when users zoom into the page to view the UI Elements.
 
 # Architecture Diagram 
-![plot](./Architecture_Diagram.jpeg)
+![plot](./Architecture_Diagram_new.jpeg)
 
 # Future Works
 1. Implementing a Speech-To-Text which allows users to say which squares they would like to implement
