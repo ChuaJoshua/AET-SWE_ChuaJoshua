@@ -16,7 +16,7 @@ export default function Home() {
   return (
     <div className="bg-white flex items-center justify-center lg:pt-5 w-full min-h-screen">
       <div className="flex flex-col px-6 py-12 bg-white lg:w-1/3 lg:border lg:shadow-md h-fit">
-        <div className="text-primary text-4xl font-bold font-serif text-center">
+        <div className="text-black text-4xl font-bold font-serif text-center">
           Tic Tac Toe Lobby
         </div>
         <div className="text-slate-950 text-lg text-center p-1">
@@ -34,7 +34,7 @@ export default function Home() {
           type="Number"
           name="Room Number"
           placeholder="Room Number"
-          className="border-b-2 border-primary p-2 m-2"
+          className="border-b-2 border-primary p-2 m-2 text-black"
           value={userInput}
           onChange={(input) => setUserInput(input.target.value)}
         ></input>
