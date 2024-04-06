@@ -1,7 +1,7 @@
 # Tic Tac Toe Game 
 
 ## Introduction
-This prototype creates a multiplayer tic tac toe game using socket programming.<br><br>
+This assessment creates a multiplayer tic tac toe game using socket programming.<br><br>
 
 **Frontend**: Next.js<br>
 **Socket Server**: Node.js with Socket.io
