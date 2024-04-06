@@ -1,7 +1,7 @@
 # Tic Tac Toe Game 
 
 ## Introduction
-This prototype creates a multiplayer tic tac toe game using socket programming.<br><br>
+This assessment creates a multiplayer tic tac toe game using socket programming.<br><br>
 
 **Frontend**: Next.js<br>
 **Socket Server**: Node.js with Socket.io
@@ -14,9 +14,9 @@ This prototype creates a multiplayer tic tac toe game using socket programming.<
 
 # Web App Navigation
 1. Navigate to [http://localhost:3000] where you will be at the Lobby Screen
-2. Key a desired room number 2 join, share this room number with your friends for them to join your room
-3. Click the button to join a Session and wait for your friend
-4. From there you can start playing the game
+2. Key a desired room number to join, share this room number with your friends for them to join your room
+3. Click the button to join a Session and wait for your friend to join
+4. From there, you can start playing the game
 
 # Walkthrough Video
 Youtube Link: [https://youtu.be/6-m30IVLt78]
@@ -37,3 +37,6 @@ Source: [https://www.datylon.com/blog/data-visualization-for-colorblind-readers]
 # Future Works
 1. Implementing a Speech-To-Text which allows users to say which squares they would like to implement
 2. Different Colour Setting for Visually Impaired Users
+3. Authentication and Restrictions
+4. Deployment - Currently, unable to deploy to Vercel has I am using ``npm start`` which needs a server. Vercel platform is serverless [https://vercel.com/guides/npm-run-start-not-working]
+5. Containerization using k8s for redundancy and scalability
