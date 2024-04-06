@@ -7,7 +7,7 @@ import cors from "cors";
 const path = await import('path');
 const fs = await import('fs');
 
-const recordsDirectory = 'records/';
+const recordsDirectory = 'records';
 const dev = process.env.NODE_ENV !== "production";
 const hostname = "localhost";
 const port = 3000;
@@ -23,20 +23,22 @@ server.use(cors());
 
 server.get('/game/:sessionId', (req, res) => {
     const sessionId = req.params.sessionId;
+    console.log('Game data:', gameSessions);
     // Check if game session exists
     if (gameSessions.has(sessionId)) {
         // Get the current game state for the session
         const gameState = gameSessions.get(sessionId);
+        console.log('Game id:', sessionId);
+        console.log('Game state:', gameState);
         // Send the game state as JSON
         res.json(gameState);
     }
     else if (!gameSessions.has(sessionId)) {
         // Get the current game state for the session
         gameSessions.set(sessionId,  { board:['','','','','','','','',''] });
-
         const filePath = path.join(recordsDirectory, `${sessionId}.txt`);
         fs.writeFileSync(filePath, `Game session ID: ${sessionId}\n\n`);
-
+        console.log('New Game state:', gameSessions.get(sessionId));
         // Send the game state as JSON
         res.json(gameSessions.get(sessionId));
     } else {
@@ -53,19 +55,22 @@ app.prepare().then(() => {
   const httpServer = createServer(handler);
 
   const io = new Server(httpServer);
+  const gameSessions = new Map();
 
   io.on("connection", (socket) => {
     console.log("A user connected to websockets");
 
 
     // Forward Data on update event
-    socket.on('update', () => {
+    socket.on('update', (data) => {
       // Update the board in the gameSessions map
-      //gameSessions.set(data.sessionId, { board: data.board });
-      console.log('Update received');
+      gameSessions.set(data.sessionId, { board: data.board });
+      console.log('Update received:', data);
+      console.log('Game data:', gameSessions);
+      
       
       // Broadcast the updated board to all clients in the session
-      //io.emit('update', data);
+      io.emit('update', data);
   });
 
   });

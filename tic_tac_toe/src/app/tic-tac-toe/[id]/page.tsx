@@ -28,33 +28,39 @@ export default function Game({ params }: { params: { id: string } }) {
 
         if (socket.connected) {
             onConnect();
-        }
-        function onConnect() {
+          }
+      
+          function onConnect() {
             setIsConnected(true);
             setTransport(socket.io.engine.transport.name);
+      
             socket.io.engine.on("upgrade", (transport) => {
-                setTransport(transport.name);
+              setTransport(transport.name);
             });
-        }
-        socket.on("connect", onConnect);
 
-        socket.on('update', (data) => {
-            console.log('Received Update');
-            if (data.sessionId === id){
-                setSquares(data.board);
-                setCurrentMove(currentMove + 1);
-                console.log('Updating Board');
-            };
-        });
-        
-        socket.on("disconnect", () => {
+            socket.on('update', (data) => {
+                console.log('Received Update');
+                if (data.sessionId === id){
+                    setSquares(data.board);
+                    setCurrentMove(currentMove + 1);
+                    console.log('Updating Board');
+                };
+            });
+          
+          }
+
+          function onDisconnect() {
             setIsConnected(false);
             setTransport("N/A");
-        });
+          }
       
-        return () => {
-            socket.disconnect();
-        };
+          socket.on("connect", onConnect);
+          socket.on("disconnect", onDisconnect);
+      
+          return () => {
+            socket.off("connect", onConnect);
+            socket.off("disconnect", onDisconnect);
+          };
 
     }, []);
 
@@ -76,11 +82,10 @@ export default function Game({ params }: { params: { id: string } }) {
                 nextSquares[index] = 'O';
             }
             setSquares(nextSquares);
-            setCurrentMove(currentMove + 1);
             if (socket)
             {
-                //socket.emit('update', { board: nextSquares, sessionId: id });
-                socket.emit('update');
+                socket.emit('update', { board: nextSquares, sessionId: id });
+                //socket.emit('update');
                 console.log('Sending Update');
             }
             
