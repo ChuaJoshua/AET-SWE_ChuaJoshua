@@ -8,9 +8,9 @@ export default function Square({
     onClick: () => void;
   })  {
 
-  return  (
-    <div className="h-24 w-24 bg-white text-black text-5xl font-bold flex justify-center items-center border border-black" onClick={onClick}>
-      {value}
+  return (
+    <div className="h-24 w-24 bg-white text-5xl font-bold flex justify-center items-center border border-black" onClick={onClick}>
+      <span style={{ color: value === 'X' ? 'red' : value === 'O' ? 'blue' : 'black' }}>{value}</span>
     </div>
   );
   

@@ -146,7 +146,7 @@ return (
             </div>
             <div className="flex flex-row">
                 <div className="bg-slate-950 text-white p-5 mr-10 rounded-lg">
-                    <h3 className="text-lg font-bold">{records !== "" ? 'No Game records' : 'Game records'}</h3>
+                    <h3 className="text-lg font-bold">{records !== "" ? 'Game records' : 'No Game records'}</h3>
                     <pre className="text-sm">{records}</pre>
                 </div>
                 <div className="flex flex-col">

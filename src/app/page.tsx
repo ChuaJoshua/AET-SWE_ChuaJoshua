@@ -17,10 +17,10 @@ export default function Home() {
     <div className="bg-white flex items-center justify-center lg:pt-5 w-full min-h-screen">
       <div className="flex flex-col px-6 py-12 bg-white lg:w-1/3 lg:border lg:shadow-md h-fit">
         <div className="text-primary text-4xl font-bold font-serif text-center">
-          Tic Tac Toe
+          Tic Tac Toe Lobby
         </div>
         <div className="text-slate-950 text-lg text-center p-1">
-          Enter a Room Number to Join a Session
+          Enter a Room Number below to Join a Session
         </div>
         <input
           type="Number"
