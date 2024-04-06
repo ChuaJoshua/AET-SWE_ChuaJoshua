@@ -14,9 +14,9 @@ This prototype creates a multiplayer tic tac toe game using socket programming.<
 
 # Web App Navigation
 1. Navigate to [http://localhost:3000] where you will be at the Lobby Screen
-2. Key a desired room number 2 join, share this room number with your friends for them to join your room
-3. Click the button to join a Session and wait for your friend
-4. From there you can start playing the game
+2. Key a desired room number to join, share this room number with your friends for them to join your room
+3. Click the button to join a Session and wait for your friend to join
+4. From there, you can start playing the game
 
 # Walkthrough Video
 Youtube Link: [https://youtu.be/6-m30IVLt78]
