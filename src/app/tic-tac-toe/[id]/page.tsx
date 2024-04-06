@@ -123,11 +123,11 @@ export default function Game({ params }: { params: { id: string } }) {
 
     if (squares == null) {
         return (
-            <div className="bg-white lg:flex lg:justify-center lg:pt-5 w-full min-h-screen items-center">
-                <div className="flex flex-col px-6 py-12 bg-white items-center">
-                    <h1 className="text-3xl font-bold pb-10">Loading ....</h1>
-                </div>
+        <div className="bg-white lg:flex lg:justify-center lg:pt-5 w-full min-h-screen items-center">
+            <div className="flex flex-col px-6 py-12 bg-white items-center">
+                <h1 className="text-3xl font-bold pb-10">Loading ...</h1>
             </div>
+        </div>
         )
     }
 
