@@ -39,29 +39,46 @@ app.prepare().then(() => {
         const board = Array(9).fill('');
         gameSessions.set(sessionId, { board: board, currentMove: 'X'});
         console.log('SERVER: New Game data:', gameSessions.get(sessionId));
-        socket.emit('update', { sessionId, board });
-        callback({ board: board })
+
+        // Create a new file to store the game data
+        const filePath = path.join(recordsDirectory, `${sessionId}.txt`);
+        fs.writeFileSync(filePath, `Game session ID: ${sessionId}\n\n`);
+
+        callback({ board: board, currentMove: 'X'})
       }
       else
       {
         const gameBoard = gameSessions.get(sessionId).board;
         const currentMove = gameSessions.get(sessionId).currentMove;
-        console.log('SERVER: New Game data:', gameSessions.get(sessionId));
-        socket.emit('update', { sessionId, board: gameBoard, currentMove: currentMove});
-        callback({ board: gameBoard })
+        console.log('SERVER: old Game data:', gameSessions.get(sessionId));
+        callback({ board: gameBoard, currentMove: currentMove})
       }
+
     });
       
 
     // Forward Data on update event
     socket.on('update', (data) => {
       // Update the board in the gameSessions map
-      gameSessions.set(data.sessionId, { board: data.board, currentMove: data.currentMove});
+      gameSessions.set(data.sessionId, { board: data.board, currentMove: data.currentMove, index: data.index});
       console.log('Update received:', data);
       console.log('Updated Game data:', gameSessions);
       
+      // Append the move to the file
+      const filePath = path.join(recordsDirectory, `${data.sessionId}.txt`);
+      const prevMove = data.currentMove === 'X' ? 'O' : 'X';
+      fs.appendFileSync(filePath, `Move: ${prevMove} at index: ${data.index}\n`);
+
       // Broadcast the updated board to all clients in the session
       io.to(data.sessionId).emit('update', data);
+    });
+
+    socket.on("file", (data, callback) => { 
+      console.log('File Requested for Session:', data.id);
+      const filePath = path.join(recordsDirectory, `${data.id}.txt`);
+      const fileData = fs.readFileSync(filePath, 'utf8');
+      console.log('File Data:', fileData);
+      callback({ fileData: fileData });
     });
 
   });

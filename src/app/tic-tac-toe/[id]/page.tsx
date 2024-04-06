@@ -14,9 +14,9 @@ export default function Game({ params }: { params: { id: string } }) {
     const { id } = params; // Destructure id from params object
     const [squares, setSquares] = useState<string[]>(Array(9).fill(''));
     const [currentMove, setCurrentMove] = useState('X');
-    const [gameEnded, setGameEnded] = useState(false);
     const [isConnected, setIsConnected] = useState(false);
     const [transport, setTransport] = useState("N/A");
+    const [records, setRecords] = useState("");
 
     useEffect(() => {
         document.title = "Game "+ id + " - Tic Tac Toe";
@@ -70,7 +70,14 @@ export default function Game({ params }: { params: { id: string } }) {
     useEffect(() => {
         console.log('Current Squares: ', squares);
         if (calculateWinner(squares) || calculateDraw(squares) ) {
-            setGameEnded(true);
+            socket.emit('file', { id: id }, (response: { fileData: string }) => { // Explicitly define the type of 'file'
+                // Server has acknowledged 'join' event
+                // 'response' should include the game data
+                console.log('Received File: ', response.fileData);
+                if (response.fileData) {
+                    setRecords(response.fileData);
+                }
+            });
         }
     }, [currentMove, squares]);
 
@@ -85,8 +92,8 @@ export default function Game({ params }: { params: { id: string } }) {
 
             if (socket)
             {
-                console.log('Sending Update WHERE', { board: nextSquares, sessionId: id, currentMove: nextMove });
-                socket.emit('update', { board: nextSquares, sessionId: id, currentMove: nextMove });
+                console.log('Sending Update WHERE', { board: nextSquares, sessionId: id, currentMove: nextMove, index: index });
+                socket.emit('update', { board: nextSquares, sessionId: id, currentMove: nextMove, index: index });
             }
             
         }
@@ -123,10 +130,17 @@ export default function Game({ params }: { params: { id: string } }) {
 
     function calculateDraw(squares : string[]) {
         return (squares.every(square => square !== '') ? true : false);
+        
     }
 
     if (squares == null) {
-        return <div>Loading...</div>; 
+        return (
+            <div className="bg-white lg:flex lg:justify-center lg:pt-5 w-full min-h-screen items-center">
+                <div className="flex flex-col px-6 py-12 bg-white items-center">
+                    <h1 className="text-3xl font-bold pb-10">Loading ....</h1>
+                </div>
+            </div>
+        )
     }
 
    return  (
@@ -160,8 +174,11 @@ export default function Game({ params }: { params: { id: string } }) {
                 </div>
             </div>
             <div>
-            {gameEnded ? (
-                <div className="bg-slate-950 text-white p-2 m-2 rounded-lg" >Game Ended</div>
+            {records !== "" ? (
+                <div className="bg-slate-950 text-white p-2 m-2 rounded-lg" >
+                    <h3 className="text-lg font-bold">Game Records</h3>
+                    <pre className="text-sm">{records}</pre>
+                </div>
             ) : null}
             </div>    
         </div>
