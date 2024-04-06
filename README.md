@@ -37,3 +37,6 @@ Source: [https://www.datylon.com/blog/data-visualization-for-colorblind-readers]
 # Future Works
 1. Implementing a Speech-To-Text which allows users to say which squares they would like to implement
 2. Different Colour Setting for Visually Impaired Users
+3. Authentication and Restrictions
+4. Deployment - Currently, unable to deploy to Vercel has I am using ``npm start`` which needs a server. Vercel platform is serverless [https://vercel.com/guides/npm-run-start-not-working]
+5. Containerization using k8s for redundancy and scalability
