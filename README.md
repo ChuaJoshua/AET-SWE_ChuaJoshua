@@ -18,6 +18,9 @@ This prototype creates a multiplayer tic tac toe game using socket programming.<
 3. Click the button to join a Session and wait for your friend
 4. From there you can start playing the game
 
+# Walkthrough Video
+Youtube Link: [https://youtu.be/6-m30IVLt78]
+
 # API Functions
 Currently, I did not program any RESTful APIs as I am using Web Sockets to transfer data between the Frontend and the Backend. While using Web sockets at the Transport Layer, Socket.io allowed me to implement a pub/sub model where clients can listen and emit messages.
 
