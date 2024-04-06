@@ -20,7 +20,15 @@ export default function Home() {
           Tic Tac Toe Lobby
         </div>
         <div className="text-slate-950 text-lg text-center p-1">
-          Enter a Room Number below to Join a Session
+        <div className="text-slate-950 text-lg text-center p-1">
+            Instructions:
+            <ul className="list-disc list-inside text-left">
+              <li>2 Players, "X" and "O"</li>
+              <li>Takes turns to place thier marks on a 3 by 3 grid.</li>
+              <li>The Goal is the get 3 symbols in a row on the grid.</li>
+              <li>Enter a Session ID and click "Join Session" to proceed.</li>
+            </ul>
+          </div>
         </div>
         <input
           type="Number"
@@ -32,8 +40,10 @@ export default function Home() {
         ></input>
         
         <div className="bg-black text-white  font-bold p-2 m-2 rounded-lg" onClick={handleJoinSession}>
-          Click here to Join Session
+          Join Session
         </div>
+
+        
 
       </div>
     </div>
